@@ -3,9 +3,15 @@ name = "system-extensions"
 version = "0.1.0"
 authors = ["Ryandw11 <ryandw11@ryandw11.com>"]
 edition = "2018"
+license = "MIT"
+description = "A robust set of extensions for operating system operations."
+keywords = ["processes", "metadata", "file", "time", "os"]
+
+exclude = ["test.txt"]
 
 [features]
 processes = []
+metadata = []
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
