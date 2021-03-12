@@ -1,0 +1,15 @@
+[package]
+name = "system-extensions"
+version = "0.1.0"
+authors = ["Ryandw11 <ryandw11@ryandw11.com>"]
+edition = "2018"
+
+[features]
+processes = []
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winuser", "fileapi", "tlhelp32", "processthreadsapi", "winerror", "minwindef", "minwinbase", "synchapi", "handleapi", "sysinfoapi", "timezoneapi", "winnt", "impl-default"] }
