@@ -262,3 +262,21 @@ pub fn set_changed_date(file: &Path, changed: &FileTime) -> bool{
 
     true
 }
+
+/*
+
+    Linux Section
+
+ */
+#[cfg(unix)]
+pub fn set_creation_date(file: &Path, create: &FileTime) -> bool {
+    unimplemented!();
+}
+#[cfg(unix)]
+pub fn set_accessed_date(file: &Path, create: &FileTime) -> bool {
+    unimplemented!();
+}
+#[cfg(unix)]
+pub fn set_changed_date(file: &Path, create: &FileTime) -> bool {
+    unimplemented!();
+}
