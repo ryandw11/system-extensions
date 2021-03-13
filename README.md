@@ -1,6 +1,13 @@
 # System Extensions
 System Extensions is a cross-platform rust library that adds in additional functionality to manage opeartions of the operating system. 
 System Extensions is split up into several modules that contain different functionality.
+   
+Add this to your `Cargo.toml` file to use it.
+```toml
+system-extensions = "0.0.1"
+```
+
+[View the documentation here!](https://docs.rs/system-extensions/0.0.1/system_extensions/all.html)
 
 **Modules**
 - Processes
