@@ -7,7 +7,7 @@ Add this to your `Cargo.toml` file to use it.
 system-extensions = "0.0.1"
 ```
 
-[View the documentation here!](https://docs.rs/system-extensions/0.0.1/system_extensions/all.html)
+[View the documentation here!](https://docs.rs/system-extensions/0.0.1/x86_64-pc-windows-msvc/system_extensions/all.html)
 
 **Modules**
 - Processes
