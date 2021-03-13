@@ -4,6 +4,9 @@ extern crate winapi;
 use std::ffi::OsStr;
 use std::iter::once;
 use std::path::Path;
+#[cfg(unix)]
+use std::process::Command;
+use std::cmp::min;
 
 /**
     Manages the imports for machines running on windows.
@@ -48,9 +51,9 @@ impl FileTime {
             day,
             month,
             year,
-            hour: -1,
-            minute: -1,
-            second: -1,
+            hour: 00,
+            minute: 00,
+            second: 00,
             milliseconds: -1,
         }
     }
@@ -270,13 +273,42 @@ pub fn set_changed_date(file: &Path, changed: &FileTime) -> bool{
  */
 #[cfg(unix)]
 pub fn set_creation_date(file: &Path, create: &FileTime) -> bool {
+    //Creation time is not stored by Unix
     unimplemented!();
 }
 #[cfg(unix)]
 pub fn set_accessed_date(file: &Path, create: &FileTime) -> bool {
-    unimplemented!();
+  Command::new("touch").arg("-a").arg("-t").arg(filetime_to_systime(&create)).arg(file.to_str().unwrap()).spawn().is_ok()
+
 }
 #[cfg(unix)]
 pub fn set_changed_date(file: &Path, create: &FileTime) -> bool {
-    unimplemented!();
+    let string = filetime_to_systime(&create);
+    println!("{}",&string);
+    Command::new("touch").arg("-m").arg("-t").arg(string).arg(file.to_str().unwrap()).spawn().is_ok()
+}
+
+#[cfg(unix)]
+ fn filetime_to_systime(time: &FileTime) -> String{
+    let mut month = time.month.to_string();
+    if month.len()!=2{
+        month = format!("0{}", month);
+    }
+    let mut day = time.day.to_string();
+    if day.len()!=2{
+        day = format!("0{}", day);
+    }
+    let mut hour = time.hour.to_string();
+    if hour.len()!=2{
+        hour = format!("0{}", hour);
+    }
+    let mut minute = time.minute.to_string();
+    if minute.len()!=2{
+        minute = format!("0{}", minute);
+    }
+    let mut second = time.second.to_string();
+    if second.len()!=2{
+        second = format!("0{}", second);
+    }
+    format!("{}{}{}{}{}.{}", time.year, month, day, hour, minute, second)
 }

@@ -24,6 +24,7 @@ pub fn obtain_error() -> u32 {
 }
 
 #[cfg(test)]
+#[cfg(windows)]
 mod tests {
     use std::fs::File;
     use std::ops::Add;
@@ -41,5 +42,24 @@ mod tests {
         let out = set_attribute(Path::new("D:\\Rust\\system-extensions\\test.txt"), Attributes::READ_ONLY | Attributes::HIDDEN);
         println!("{:?}", out);
         println!("Has attrib: {:?}", get_attributes(Path::new("D:\\Rust\\system-extensions\\test.txt")));
+    }
+}
+#[cfg(test)]
+#[cfg(unix)]
+mod tests {
+    use std::fs::File;
+    use std::ops::Add;
+    use std::path::Path;
+
+    use crate::metadata::time::{FileTime, set_creation_date, set_accessed_date, set_changed_date};
+    use crate::metadata::attribute::{set_attribute, Attributes, has_attribute, get_attributes};
+    use crate::processes::processes::find_process_id;
+
+    #[test]
+    fn it_works() {
+        let val = find_process_id("NetworkManager").expect("An error occurred!");
+        println!("{:?}", val);
+        set_changed_date(Path::new("/home/wherkamp/cat"), &FileTime::new(5, 12, 2019));
+
     }
 }
