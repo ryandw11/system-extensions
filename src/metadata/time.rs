@@ -4,6 +4,10 @@ extern crate winapi;
 use std::ffi::OsStr;
 use std::iter::once;
 use std::path::Path;
+#[cfg(unix)]
+use std::process::Command;
+use std::cmp::min;
+use chrono::{Local, Timelike, Datelike};
 
 /**
     Manages the imports for machines running on windows.
@@ -30,13 +34,13 @@ macro_rules! windows_imports {
 */
 #[derive(Debug)]
 pub struct FileTime {
-    day: i16,
-    month: i16,
-    year: i16,
-    hour: i16,
-    minute: i16,
-    second: i16,
-    milliseconds: i16,
+    pub day: i16,
+    pub month: i16,
+    pub year: i16,
+    pub hour: i16,
+    pub minute: i16,
+    pub second: i16,
+    pub milliseconds: i16,
 }
 
 impl FileTime {
@@ -270,13 +274,82 @@ pub fn set_changed_date(file: &Path, changed: &FileTime) -> bool{
  */
 #[cfg(unix)]
 pub fn set_creation_date(file: &Path, create: &FileTime) -> bool {
+    //Creation time is not stored by Unix
     unimplemented!();
 }
 #[cfg(unix)]
 pub fn set_accessed_date(file: &Path, create: &FileTime) -> bool {
-    unimplemented!();
+  Command::new("touch").arg("-a").arg("-t").arg(filetime_to_systime(&create)).arg(file.to_str().unwrap()).spawn().is_ok()
+
 }
 #[cfg(unix)]
 pub fn set_changed_date(file: &Path, create: &FileTime) -> bool {
-    unimplemented!();
+    Command::new("touch").arg("-m").arg("-t").arg(filetime_to_systime(&create)).arg(file.to_str().unwrap()).spawn().is_ok()
+}
+
+#[cfg(unix)]
+pub fn filetime_to_systime(time: &FileTime) -> String{
+    let now = Local::now();
+
+    let mut year:String;
+    if time.year!=-1{
+        year = time.year.to_string();
+    }else{
+        year = now.year().to_string();
+    }
+    if year.len()!=2{
+        year = format!("{}", year);
+    }
+
+    let mut month:String;
+    if time.month!=-1{
+        month = time.month.to_string();
+    }else{
+        month = now.month().to_string();
+    }
+    if month.len()!=2{
+        month = format!("0{}", month);
+    }
+
+    let mut day:String;
+    if time.day!=-1{
+        day = time.day.to_string();
+    }else{
+        day = (now.day()).to_string();
+    }
+    if day.len()!=2{
+        day = format!("0{}", day);
+    }
+
+    let mut hour:String;
+    if time.hour!=-1{
+        hour = time.hour.to_string();
+    }else{
+        hour = (now.hour()+1).to_string();
+    }
+    if hour.len()!=2{
+        hour = format!("0{}", hour);
+    }
+
+    let mut minute:String;
+    if time.minute!=-1{
+        minute = time.minute.to_string();
+    }else{
+        minute = (now.minute()+1).to_string();
+    }
+    if minute.len()!=2{
+        minute = format!("0{}", minute);
+    }
+
+    let mut second:String;
+    if time.second!=-1{
+        second = time.second.to_string();
+    }else{
+        second = (now.second()+1).to_string();
+    }
+    if second.len()!=2{
+        second = format!("0{}", second);
+    }
+
+    format!("{}{}{}{}{}.{}", year, month, day, hour, minute, second)
 }

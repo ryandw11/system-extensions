@@ -2,6 +2,8 @@
 extern crate winapi;
 
 use core::mem;
+use std::path::Path;
+use std::fs;
 
 /**
    Find a process by its name.
