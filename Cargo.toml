@@ -1,6 +1,6 @@
 [package]
 name = "system-extensions"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Ryandw11 <ryandw11@ryandw11.com>"]
 edition = "2018"
 license = "MIT"
@@ -19,7 +19,9 @@ metadata = []
 
 [dependencies]
 bitflags = "1.2.1"
+
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["winuser", "fileapi", "tlhelp32", "errhandlingapi", "processthreadsapi", "winerror", "minwindef", "minwinbase", "synchapi", "handleapi", "sysinfoapi", "timezoneapi", "winnt", "impl-default"] }
+
 [target.'cfg(unix)'.dependencies]
 chrono = "0.4"

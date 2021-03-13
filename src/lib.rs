@@ -22,7 +22,11 @@ pub fn obtain_error() -> u32 {
         return GetLastError();
     }
 }
+/*
 
+    Windows tests.
+
+ */
 #[cfg(test)]
 #[cfg(windows)]
 mod tests {
@@ -38,12 +42,18 @@ mod tests {
     fn it_works() {
         let val = find_process_id("Discord.exe").expect("An error occurred!");
         println!("{:?}", val);
-        set_creation_date(Path::new("D:\\Rust\\system-extensions\\test.txt"), &FileTime::new(5, 12, 3030));
-        let out = set_attribute(Path::new("D:\\Rust\\system-extensions\\test.txt"), Attributes::READ_ONLY | Attributes::HIDDEN);
+        set_creation_date(Path::new("./test.txt"), &FileTime::new(5, 12, 3030));
+        let out = set_attribute(Path::new("./test.txt"), Attributes::READ_ONLY | Attributes::HIDDEN);
         println!("{:?}", out);
-        println!("Has attrib: {:?}", get_attributes(Path::new("D:\\Rust\\system-extensions\\test.txt")));
+        println!("Has attrib: {:?}", get_attributes(Path::new("./test.txt")));
     }
 }
+
+/*
+
+    Unix tests.
+
+ */
 #[cfg(test)]
 #[cfg(unix)]
 mod tests {

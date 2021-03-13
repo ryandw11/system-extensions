@@ -4,10 +4,8 @@ extern crate winapi;
 use std::ffi::OsStr;
 use std::iter::once;
 use std::path::Path;
-#[cfg(unix)]
 use std::process::Command;
-use std::cmp::min;
-use chrono::{Local, Timelike, Datelike};
+
 
 /**
     Manages the imports for machines running on windows.
@@ -207,7 +205,7 @@ pub fn set_accessed_date(file: &Path, accessed: &FileTime) -> bool {
 }
 
 /**
-   Set the creation date of a file.
+   Set the modified date of a file.
 
    ## Params
    file: &Path -> The path of the file to change.
@@ -272,23 +270,114 @@ pub fn set_changed_date(file: &Path, changed: &FileTime) -> bool{
     Linux Section
 
  */
+/**
+   Set the creation date of a file.
+
+   **Note**: This does nothing on Unix systems and only exists
+   for cross compatibility.
+
+   ## Params
+   `file: &Path` -> The path of the file to change. <br>
+   `create: &[`FileTime`]` -> The new file time for a file.
+
+   ## Returns
+   bool -> True if successful, false if not.     <br>
+   False means that the file could not be found or modified. Check to makesure
+   the path is correct.
+
+   ## Examples
+   ```rust
+   use system_extensions::metadata::time::{set_creation_date, FileTime};
+   use std::path::Path;
+
+   set_creation_date(Path::new("/test.txt"), &FileTime::new(25, 12, 2021));
+   ```
+*/
 #[cfg(unix)]
 pub fn set_creation_date(file: &Path, create: &FileTime) -> bool {
     //Creation time is not stored by Unix
-    unimplemented!();
+    true
 }
+
+/**
+   Set the accessed date of a file.
+
+   ## Params
+   file: &Path -> The path of the file to change. <br>
+   create: &[`FileTime`] -> The new file time for a file.
+
+   ## Returns
+   bool -> True if successful, false if not. <br>
+   False means that the file could not be found or modified. Check to makesure
+   the path is correct.
+
+   ## Examples
+   ```rust
+   use system_extensions::metadata::time::{set_accessed_date, FileTime};
+   use std::path::Path;
+
+   set_accessed_date(Path::new("/test.txt"), &FileTime::new(25, 12, 2021));
+   ```
+*/
 #[cfg(unix)]
 pub fn set_accessed_date(file: &Path, create: &FileTime) -> bool {
   Command::new("touch").arg("-a").arg("-t").arg(filetime_to_systime(&create)).arg(file.to_str().unwrap()).spawn().is_ok()
 
 }
+
+/**
+   Set the modified date of a file.
+
+   ## Params
+   file: &Path -> The path of the file to change. <br>
+   create: &[`FileTime`] -> The new file time for a file.
+
+   ## Returns
+   bool -> True if successful, false if not. <br>
+   False means that the file could not be found or modified. Check to makesure
+   the path is correct.
+
+   ## Examples
+   ```rust
+   use system_extensions::metadata::time::{set_changed_date, FileTime};
+   use std::path::Path;
+
+   set_changed_date(Path::new("/test.txt"), &FileTime::new(25, 12, 2021));
+   ```
+*/
 #[cfg(unix)]
 pub fn set_changed_date(file: &Path, create: &FileTime) -> bool {
     Command::new("touch").arg("-m").arg("-t").arg(filetime_to_systime(&create)).arg(file.to_str().unwrap()).spawn().is_ok()
 }
 
+/**
+   Convert the file time to the system time needed for unix.
+   <br>
+   This is primarily used internally.
+
+   ## Params
+   time: &[`FileTime`] -> The new file time for a file.
+
+   ## Returns
+   bool -> True if successful, false if not.
+   False means that the file could not be found or modified. Check to makesure
+   the path is correct.
+
+   ## Examples
+   ```rust
+
+   if cfg!(unix) {
+       use system_extensions::metadata::time::{filetime_to_systime, FileTime};
+       use std::path::Path;
+       filetime_to_systime(&FileTime::new(25, 12, 2021));
+   }
+   ```
+*/
 #[cfg(unix)]
 pub fn filetime_to_systime(time: &FileTime) -> String{
+    use std::cmp::min;
+    use chrono::{Local, Timelike, Datelike};
+
     let now = Local::now();
 
     let mut year:String;

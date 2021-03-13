@@ -44,7 +44,7 @@ const ATTRIBUTES: [Attributes; 3] = [Attributes::NORMAL, Attributes::HIDDEN, Att
     This is very OS dependent and some attributes might do nothing on some operating systems.
 
    # Params
-   file: Path -> The path to the file.
+   file: Path -> The path to the file.<br>
    attrib: [`Attributes`] -> The attributes to add. (Bit-wise OR can be used to set multiple attributes.)
    # Returns
    bool -> If the attributes were set successfully. (If not check to make sure the file path exists.)
@@ -80,7 +80,7 @@ pub fn set_attribute(file: &Path, attrib: Attributes) -> bool {
    Check if a file has a certain attribute.
 
    ## Params
-   file: &Path -> The path to the file.
+   file: &Path -> The path to the file. <br>
    attrib: [`Attributes`] -> The attribute to check for.
 
    ## Returns
@@ -158,17 +158,77 @@ pub fn get_attributes(file: &Path) -> Result<Vec<Attributes>, String> {
     Linux Section
 
  */
+/**
+    Set the attributes for a file.
 
+    This is very OS dependent and some attributes might do nothing on some operating systems.
+
+   # Params
+   file: Path -> The path to the file. <br>
+   attrib: [`Attributes`] -> The attributes to add. (Bit-wise OR can be used to set multiple attributes.)
+   # Returns
+   bool -> If the attributes were set successfully. (If not check to make sure the file path exists.)
+
+   # Example
+   ```rust
+   use std::path::Path;
+   use system_extensions::metadata::attribute::{set_attribute, Attributes};
+
+   set_attribute(Path::new("/test.txt"), Attributes::HIDDEN);
+   ```
+   Using more than one attribute:
+   ```rust
+   use std::path::Path;
+   use system_extensions::metadata::attribute::{set_attribute, Attributes};
+
+   set_attribute(Path::new("/test.txt"), Attributes::HIDDEN | Attributes::READ_ONLY);
+   ```
+*/
 #[cfg(unix)]
 pub fn set_attribute(file: &Path, attrib: Attributes) -> bool {
     unimplemented!();
 }
 
+/**
+   Check if a file has a certain attribute.
+
+   ## Params
+   file: &Path -> The path to the file. <br>
+   attrib: [`Attributes`] -> The attribute to check for.
+
+   ## Returns
+   If the file has the specified attribute.
+
+   ## Examples
+   ```rust
+   use std::path::Path;
+   use system_extensions::metadata::attribute::{has_attribute, Attributes};
+
+   has_attribute(Path::new("/test.txt"), Attributes::HIDDEN);
+   ```
+*/
 #[cfg(unix)]
 pub fn has_attribute(file: &Path, attrib: Attributes) -> bool {
     unimplemented!();
 }
 
+/**
+   Get a list of attributes a file has.
+
+   ## Params
+   file: &Path -> The path to the file.
+
+   ## Returns
+   The result of a vector of the attributes.
+
+   ## Examples
+   ```rust
+   use std::path::Path;
+   use system_extensions::metadata::attribute::{get_attributes, Attributes};
+
+   attribs: Vec<Attributes> = get_attributes(Path::new("/test.txt")).unwrap();
+   ```
+*/
 #[cfg(unix)]
 pub fn get_attributes(file: &Path) -> Result<Vec<Attributes>, String> {
     unimplemented!();
