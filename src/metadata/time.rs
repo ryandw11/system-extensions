@@ -51,9 +51,9 @@ impl FileTime {
             day,
             month,
             year,
-            hour: 00,
-            minute: 00,
-            second: 00,
+            hour: 0,
+            minute: 0,
+            second: 0,
             milliseconds: -1,
         }
     }
