@@ -233,7 +233,6 @@ pub fn set_attribute(path: &Path, attrib: Attributes) -> bool {
 #[cfg(unix)]
 pub fn has_attribute(file: &Path, attrib: Attributes) -> bool {
     use std::fs::File;
-    println!("{}", file.to_str().unwrap());
     if attrib ==Attributes::HIDDEN {
         let option = file.file_name();
         if option.is_none(){
