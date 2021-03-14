@@ -1,6 +1,8 @@
 #[cfg(windows)]
 extern crate winapi;
 
+use std::ffi::OsStr;
+use std::iter::once;
 use std::path::Path;
 use std::process::Command;
 

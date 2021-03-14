@@ -1,6 +1,7 @@
 #[cfg(windows)]
 extern crate winapi;
 
+use std::ffi::CString;
 use std::path::Path;
 
 
