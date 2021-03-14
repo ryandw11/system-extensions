@@ -3,6 +3,9 @@ extern crate winapi;
 
 use std::ffi::CString;
 use std::path::Path;
+use std::fs::set_permissions;
+
+
 
 bitflags! {
     /**
@@ -185,8 +188,30 @@ pub fn get_attributes(file: &Path) -> Result<Vec<Attributes>, String> {
    ```
 */
 #[cfg(unix)]
-pub fn set_attribute(file: &Path, attrib: Attributes) -> bool {
-    unimplemented!();
+pub fn set_attribute(path: &Path, attrib: Attributes) -> bool {
+    use std::fs;
+    use std::os::unix::fs::PermissionsExt;
+    use std::fs::File;
+    if attrib ==Attributes::HIDDEN {
+        fs::rename(path, format!(".{}", path.to_str().unwrap())).is_ok()
+    } else if attrib == Attributes::READ_ONLY{
+        let result = File::create(path);
+        if result.is_err() {
+            return false;
+        }
+        let file = result.unwrap();
+        let result_meta = file.metadata();
+        if result_meta.is_err() {
+            return false;
+        }
+        let meta = result_meta.unwrap();
+        let mut perms = meta.permissions();
+        perms.set_readonly(true);
+        set_permissions(&path, perms).is_ok()
+
+    }else {
+        unimplemented!()
+    }
 }
 
 /**
@@ -209,7 +234,36 @@ pub fn set_attribute(file: &Path, attrib: Attributes) -> bool {
 */
 #[cfg(unix)]
 pub fn has_attribute(file: &Path, attrib: Attributes) -> bool {
-    unimplemented!();
+    use std::fs;
+    use std::os::unix::fs::PermissionsExt;
+    use std::fs::File;
+    println!("{}", file.to_str().unwrap());
+    if attrib ==Attributes::HIDDEN {
+        let option = file.file_name();
+        if option.is_none(){
+            return false;
+        }
+        let option = option.unwrap();
+        let str = option.to_str();
+        if str.is_none(){
+            return false;
+        }
+        str.unwrap().starts_with(".")
+    } else if attrib == Attributes::READ_ONLY{
+        let result = File::open(file);
+        if result.is_err() {
+            return false;
+        }
+        let file = result.unwrap();
+        let result_meta = file.metadata();
+        if result_meta.is_err() {
+            return false;
+        }
+        let meta = result_meta.unwrap();
+        meta.permissions().readonly()
+    }else {
+        unimplemented!()
+    }
 }
 
 /**
@@ -231,5 +285,16 @@ pub fn has_attribute(file: &Path, attrib: Attributes) -> bool {
 */
 #[cfg(unix)]
 pub fn get_attributes(file: &Path) -> Result<Vec<Attributes>, String> {
-    unimplemented!();
+    use std::fs;
+    use std::os::unix::fs::PermissionsExt;
+    use std::fs::File;
+    let mut values: Vec<Attributes> = Vec::new();
+    if has_attribute(file, Attributes::READ_ONLY){
+        values.push(Attributes::READ_ONLY);
+    }
+    if has_attribute(file, Attributes::HIDDEN){
+        values.push(Attributes::HIDDEN);
+    }
+
+    Ok(values)
 }
