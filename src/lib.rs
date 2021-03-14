@@ -58,11 +58,10 @@ mod tests {
 #[cfg(unix)]
 mod tests {
     use std::fs::File;
-    use std::ops::Add;
     use std::path::Path;
 
-    use crate::metadata::time::{FileTime, set_creation_date, set_accessed_date, set_changed_date, filetime_to_systime};
-    use crate::metadata::attribute::{set_attribute, Attributes, has_attribute, get_attributes};
+    use crate::metadata::time::{FileTime, set_accessed_date, set_changed_date, filetime_to_systime};
+    use crate::metadata::attribute::{set_attribute, Attributes, get_attributes};
     use crate::processes::processes::find_process_id;
     use std::io::Write;
 
@@ -90,8 +89,8 @@ mod tests {
         let mut path = Path::new("se.test");
 
         let mut file = File::create(&path).unwrap();
-        file.write_all(b"Howdy from System-extensions");
-        file.sync_all();
+        file.write_all(b"Howdy from System-extensions").unwrap();
+        file.sync_all().unwrap();
         set_attribute(path, Attributes::HIDDEN);
         path = Path::new(".se.test");
         assert!(set_attribute(&path, Attributes::READ_ONLY),"Unable to change readonly status");

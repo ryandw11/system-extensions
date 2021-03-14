@@ -1,7 +1,6 @@
 #[cfg(windows)]
 extern crate winapi;
 
-use core::mem;
 use std::path::Path;
 use std::fs;
 

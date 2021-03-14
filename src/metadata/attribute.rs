@@ -1,9 +1,7 @@
 #[cfg(windows)]
 extern crate winapi;
 
-use std::ffi::CString;
 use std::path::Path;
-use std::fs::set_permissions;
 
 
 
@@ -190,7 +188,7 @@ pub fn get_attributes(file: &Path) -> Result<Vec<Attributes>, String> {
 #[cfg(unix)]
 pub fn set_attribute(path: &Path, attrib: Attributes) -> bool {
     use std::fs;
-    use std::os::unix::fs::PermissionsExt;
+    use std::fs::set_permissions;
     use std::fs::File;
     if attrib ==Attributes::HIDDEN {
         fs::rename(path, format!(".{}", path.to_str().unwrap())).is_ok()
@@ -234,8 +232,6 @@ pub fn set_attribute(path: &Path, attrib: Attributes) -> bool {
 */
 #[cfg(unix)]
 pub fn has_attribute(file: &Path, attrib: Attributes) -> bool {
-    use std::fs;
-    use std::os::unix::fs::PermissionsExt;
     use std::fs::File;
     println!("{}", file.to_str().unwrap());
     if attrib ==Attributes::HIDDEN {
@@ -285,9 +281,6 @@ pub fn has_attribute(file: &Path, attrib: Attributes) -> bool {
 */
 #[cfg(unix)]
 pub fn get_attributes(file: &Path) -> Result<Vec<Attributes>, String> {
-    use std::fs;
-    use std::os::unix::fs::PermissionsExt;
-    use std::fs::File;
     let mut values: Vec<Attributes> = Vec::new();
     if has_attribute(file, Attributes::READ_ONLY){
         values.push(Attributes::READ_ONLY);
