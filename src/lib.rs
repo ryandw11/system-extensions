@@ -58,12 +58,12 @@ mod tests {
 #[cfg(unix)]
 mod tests {
     use std::fs::File;
-    use std::ops::Add;
     use std::path::Path;
 
-    use crate::metadata::time::{FileTime, set_creation_date, set_accessed_date, set_changed_date, filetime_to_systime};
-    use crate::metadata::attribute::{set_attribute, Attributes, has_attribute, get_attributes};
+    use crate::metadata::time::{FileTime, set_accessed_date, set_changed_date, filetime_to_systime};
+    use crate::metadata::attribute::{set_attribute, Attributes, get_attributes};
     use crate::processes::processes::find_process_id;
+    use std::io::Write;
 
     #[test]
     fn it_works() {
@@ -80,8 +80,23 @@ mod tests {
         };
         let systime = filetime_to_systime(&time);
         assert_eq!(systime,"202103130246.46");
-        set_changed_date( Path::new(&std::env::var("HOME").unwrap()).join(".profile").as_path(), &time);
-        set_accessed_date( Path::new(&std::env::var("HOME").unwrap()).join(".profile").as_path(), &time);
+        let x = Path::new(&std::env::var("HOME").unwrap()).join(".profile");
+        set_changed_date(x.clone().as_path(), &time);
+        set_accessed_date(x.clone().as_path(), &time);
+    }
+    #[test]
+    fn attribute_tests(){
+        let mut path = Path::new("se.test");
+
+        let mut file = File::create(&path).unwrap();
+        file.write_all(b"Howdy from System-extensions").unwrap();
+        file.sync_all().unwrap();
+        set_attribute(path, Attributes::HIDDEN);
+        path = Path::new(".se.test");
+        assert!(set_attribute(&path, Attributes::READ_ONLY),"Unable to change readonly status");
+        let attributes = get_attributes(&path).unwrap();
+        assert!(attributes.contains(&Attributes::HIDDEN),"Hidden Attribute missing");
+        assert!(attributes.contains(&Attributes::READ_ONLY),"Read ONLY attribute missing");
 
     }
 }

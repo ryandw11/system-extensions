@@ -1,8 +1,6 @@
 #[cfg(windows)]
 extern crate winapi;
 
-use std::ffi::OsStr;
-use std::iter::once;
 use std::path::Path;
 use std::process::Command;
 
@@ -375,7 +373,6 @@ pub fn set_changed_date(file: &Path, create: &FileTime) -> bool {
 */
 #[cfg(unix)]
 pub fn filetime_to_systime(time: &FileTime) -> String{
-    use std::cmp::min;
     use chrono::{Local, Timelike, Datelike};
 
     let now = Local::now();
