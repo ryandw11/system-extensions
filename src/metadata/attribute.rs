@@ -191,9 +191,12 @@ pub fn set_attribute(path: &Path, attrib: Attributes) -> bool {
     use std::fs;
     use std::fs::set_permissions;
     use std::fs::File;
-    if attrib ==Attributes::HIDDEN {
-        fs::rename(path, format!(".{}", path.to_str().unwrap())).is_ok()
-    } else if attrib == Attributes::READ_ONLY{
+
+    let bits = attrib.bits;
+
+    if &bits & Attributes::HIDDEN.bits == Attributes::HIDDEN.bits {
+        fs::rename(path, format!(".{}", path.to_str().unwrap())).is_ok();
+    } else if &bits & Attributes::READ_ONLY.bits == Attributes::READ_ONLY.bits{
         let result = File::create(path);
         if result.is_err() {
             return false;
@@ -206,11 +209,9 @@ pub fn set_attribute(path: &Path, attrib: Attributes) -> bool {
         let meta = result_meta.unwrap();
         let mut perms = meta.permissions();
         perms.set_readonly(true);
-        set_permissions(&path, perms).is_ok()
-
-    }else {
-        unimplemented!()
+        return set_permissions(&path, perms).is_ok();
     }
+    true
 }
 
 /**
@@ -258,7 +259,7 @@ pub fn has_attribute(file: &Path, attrib: Attributes) -> bool {
         let meta = result_meta.unwrap();
         meta.permissions().readonly()
     }else {
-        unimplemented!()
+        false
     }
 }
 

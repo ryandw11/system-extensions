@@ -274,7 +274,7 @@ pub fn set_changed_date(file: &Path, changed: &FileTime) -> bool{
    Set the creation date of a file.
 
    **Note**: This does nothing on Unix systems and only exists
-   for cross compatibility.
+   for cross compatibility. (Except on Mac)
 
    ## Params
    `file: &Path` -> The path of the file to change. <br>
@@ -293,7 +293,7 @@ pub fn set_changed_date(file: &Path, changed: &FileTime) -> bool{
    set_creation_date(Path::new("/test.txt"), &FileTime::new(25, 12, 2021));
    ```
 */
-#[cfg(unix)]
+#[cfg(all(unix, not(target_os = "macos")))]
 pub fn set_creation_date(file: &Path, create: &FileTime) -> bool {
     //Creation time is not stored by Unix
     true
@@ -440,4 +440,46 @@ pub fn filetime_to_systime(time: &FileTime) -> String{
     }
 
     format!("{}{}{}{}{}.{}", year, month, day, hour, minute, second)
+}
+
+/*
+
+    Mac specific section
+
+ */
+/**
+   Set the creation date of a file.
+
+   **Note:** Requires the `SetFile` command to be on the system.
+
+   ## Params
+   `file: &Path` -> The path of the file to change. <br>
+   `create: &[`FileTime`]` -> The new file time for a file.
+
+   ## Returns
+   bool -> True if successful, false if not.     <br>
+   False means that the file could not be found or modified. Check to makesure
+   the path is correct.
+
+   ## Examples
+   ```rust
+   use system_extensions::metadata::time::{set_creation_date, FileTime};
+   use std::path::Path;
+
+   set_creation_date(Path::new("/test.txt"), &FileTime::new(25, 12, 2021));
+   ```
+*/
+#[cfg(target_os = "macos")]
+pub fn set_creation_date(file: &Path, create: &FileTime) -> bool {
+    let mut time = "AM";
+    if create.hour >= 12 {
+        time = "PM";
+    }
+
+    Command::new("SetFile")
+        .arg("-d")
+        .arg(format!("'{}/{}/{} {}:{}:{} {}'", create.month, create.day, (create.year + 1), create.hour,
+                     create.minute, create.second, time))
+        .arg(file.to_str().unwrap())
+        .spawn().is_ok()
 }

@@ -80,7 +80,7 @@ pub fn find_process_id(process_name: &str) -> Result<u32, String> {
 /**
 *    Check if a process is running by its id.
 *    # Params
-*    process_id -> The process id to find. (Note: process ids can be recycled.)
+*    process_id: &u32 -> The process id to find. (Note: process ids can be recycled.)
 *    # Returns
 *    bool -> If the process is running.
 *    # Examples
@@ -106,7 +106,25 @@ pub fn is_process_running(process_id: &u32) -> bool {
     }
 }
 
-#[cfg(unix)]
+/*
+
+    Linux Section
+
+ */
+
+/**
+*    Check if a process is running by its id.
+*    # Params
+*    process_id: &u32 -> The process id to find. (Note: process ids can be recycled.)
+*    # Returns
+*    bool -> If the process is running.
+*    # Examples
+*    ```rust
+*    use system_extensions::processes::processes;
+*    let is_running : bool = processes::is_process_running(55555 as &u32);
+*    ```
+*/
+#[cfg(all(unix, not(target_os = "macos")))]
 pub fn is_process_running(process_id: &u32) -> bool {
     let mut result: bool = false;
     let file = Path::new("/proc").join(process_id.to_string()).join("cmdline");
@@ -116,7 +134,24 @@ pub fn is_process_running(process_id: &u32) -> bool {
     result
 }
 
-#[cfg(unix)]
+/**
+   Find a process by its name.
+   (Note: The name is system dependent.)
+
+   It is also important to note that ids are assigned by the Operating System.
+   Operating Systems, like Windows, may reuse process ids.
+
+   # Params
+   process_name: &str -> The name of the process to find the id for.
+   # Returns
+   Result<u32> -> The result containg the id of the process.
+   # Examples
+   ```rust
+   use system_extensions::processes::processes;
+   let pid : u32 = processes::find_process_id("chrome").unwrap();
+   ```
+*/
+#[cfg(all(unix, not(target_os = "macos")))]
 pub fn find_process_id(process_name: &str) -> Result<u32, String> {
     let paths = fs::read_dir("/proc/").unwrap();
     let mut result: u32 = 0;
@@ -136,4 +171,72 @@ pub fn find_process_id(process_name: &str) -> Result<u32, String> {
     }
 
     Ok(result)
+}
+
+/*
+
+    Mac OS Section
+
+ */
+
+/**
+   Find a process by its name.
+   (Note: The name is system dependent. Ex: Windows uses .exe at the end).
+
+   It is also important to note that ids are assigned by the Operating System.
+   Operating Systems, like Windows, may reuse process ids.
+
+   # Params
+   process_name: &str -> The name of the process to find the id for.
+   # Returns
+   Result<u32> -> The result containg the id of the process.
+   # Examples
+   ```rust
+   use system_extensions::processes::processes;
+   let pid : u32 = processes::find_process_id("chrome").unwrap();
+   ```
+*/
+#[cfg(target_os = "macos")]
+pub fn find_process_id(process_name: &str) -> Result<u32, String> {
+    use std::process::Command;
+    use std::str;
+    let pl = Command::new("pgrep")
+        .arg(process_name)
+        .output();
+
+    let output_vec: Vec<u8> = pl.unwrap().stdout;
+
+    let mut str_iter = str::from_utf8(&output_vec).unwrap().split_whitespace();;
+    let output = str_iter.next().unwrap().parse::<u32>();
+    if output.is_err(){
+        Err(String::from("Unable to find specified process id."))
+    }else {
+        Ok(output.unwrap())
+    }
+}
+
+/**
+*    Check if a process is running by its id.
+*    # Params
+*    process_id: &u32 -> The process id to find. (Note: process ids can be recycled.)
+*    # Returns
+*    bool -> If the process is running.
+*    # Examples
+*    ```rust
+*    use system_extensions::processes::processes;
+*    let is_running : bool = processes::is_process_running(55555 as &u32);
+*    ```
+*/
+#[cfg(target_os = "macos")]
+pub fn is_process_running(process_id: &u32) -> bool {
+    use std::process::Command;
+    use std::str;
+    let pl = Command::new("kill")
+        .arg("-0")
+        .arg(format!("{}", process_id))
+        .output();
+
+    let output_vec: Vec<u8> = pl.unwrap().stdout;
+
+    output_vec.len() == 0
 }
