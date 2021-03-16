@@ -8,8 +8,18 @@ extern crate bitflags;
 #[cfg(windows)]
 extern crate winapi;
 
+/**
+    Feature that involves system processes.
+*/
 pub mod processes;
+/**
+    Feature that involves additional file metadata editing.
+*/
 pub mod metadata;
+/**
+    Experimental Feature that allows the creation of GUI dialogues.
+*/
+pub mod dialogues;
 
 /**
    If an error occurs in the Windows API, you can check it here.
@@ -37,6 +47,9 @@ mod tests {
     use crate::metadata::time::{FileTime, set_creation_date};
     use crate::metadata::attribute::{set_attribute, Attributes, has_attribute, get_attributes};
     use crate::processes::processes::find_process_id;
+    use crate::dialogues::messagebox::{create_message_box, BoxProperties, BoxReturn};
+    use crate::dialogues::filebox::open_select_file_menu;
+    use crate::obtain_error;
 
     #[test]
     fn it_works() {
@@ -46,6 +59,14 @@ mod tests {
         let out = set_attribute(Path::new("./test.txt"), Attributes::READ_ONLY | Attributes::HIDDEN);
         println!("{:?}", out);
         println!("Has attrib: {:?}", get_attributes(Path::new("./test.txt")));
+        let r = create_message_box("Test", "This is a test of the message box!",
+                                   BoxProperties::ICON_WARNING | BoxProperties::CANCEL_TRY_CONTINUE );
+
+        if r == BoxReturn::CONTINUE {
+            println!("The continue button as pressed!");
+        }
+        open_select_file_menu();
+        println!("{}", obtain_error())
     }
 }
 

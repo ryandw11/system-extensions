@@ -1,11 +1,11 @@
 [package]
 name = "system-extensions"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Ryandw11 <ryandw11@ryandw11.com>"]
 edition = "2018"
 license = "MIT"
 description = "A robust set of extensions for operating system operations."
-keywords = ["processes", "metadata", "file", "time", "os"]
+keywords = ["processes", "metadata", "file", "time", "os", "dialogues", "open file"]
 repository = "https://github.com/ryandw11/system-extensions"
 readme = "README.md"
 
@@ -14,6 +14,7 @@ exclude = ["test.txt"]
 [features]
 processes = []
 metadata = []
+dialogues = []
 
 [package.metadata.docs.rs]
 all-features = true
@@ -25,7 +26,7 @@ all-features = true
 bitflags = "1.2.1"
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["winuser", "fileapi", "tlhelp32", "errhandlingapi", "processthreadsapi", "winerror", "minwindef", "minwinbase", "synchapi", "handleapi", "sysinfoapi", "timezoneapi", "winnt", "impl-default"] }
+winapi = { version = "0.3", features = ["winuser", "commdlg", "fileapi", "tlhelp32", "errhandlingapi", "processthreadsapi", "winerror", "minwindef", "minwinbase", "synchapi", "handleapi", "sysinfoapi", "timezoneapi", "winnt", "impl-default"] }
 
 [target.'cfg(unix)'.dependencies]
 chrono = "0.4"
