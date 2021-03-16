@@ -42,13 +42,13 @@ pub fn obtain_error() -> u32 {
 mod tests {
     use std::fs::File;
     use std::ops::Add;
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     use crate::metadata::time::{FileTime, set_creation_date};
     use crate::metadata::attribute::{set_attribute, Attributes, has_attribute, get_attributes};
     use crate::processes::processes::find_process_id;
     use crate::dialogues::messagebox::{create_message_box, BoxProperties, BoxReturn};
-    use crate::dialogues::filebox::open_select_file_menu;
+    use crate::dialogues::filebox::{open_select_file_menu, Filter, open_select_file_menu_filter};
     use crate::obtain_error;
 
     #[test]
@@ -65,7 +65,12 @@ mod tests {
         if r == BoxReturn::CONTINUE {
             println!("The continue button as pressed!");
         }
-        open_select_file_menu();
+        let filter = vec![
+            Filter::new("PNG File".to_string(), "*.png".to_string()),
+            Filter::new("JPEG File".to_string(), "*.jpg".to_string())
+        ];
+
+        let result: PathBuf = open_select_file_menu_filter(filter);
         println!("{}", obtain_error())
     }
 }

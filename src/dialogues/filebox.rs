@@ -75,8 +75,8 @@ fn filter_to_str(filter: Vec<Filter>) -> String {
         string.push_str(&fil.title);
         string.push_str("\0");
         string.push_str(&fil.file_ending);
+        string.push_str("\0");
     }
-    string.push_str("\0");
 
     return string;
 }
