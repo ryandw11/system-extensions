@@ -48,7 +48,7 @@ mod tests {
     use crate::metadata::attribute::{set_attribute, Attributes, has_attribute, get_attributes};
     use crate::processes::processes::find_process_id;
     use crate::dialogues::messagebox::{create_message_box, BoxProperties, BoxReturn};
-    use crate::dialogues::filebox::{open_select_file_menu, Filter, open_select_file_menu_filter};
+    use crate::dialogues::filebox::{open_file_dialogue, Filter, open_file_dialogue_filter, save_file_dialogue_filter};
     use crate::obtain_error;
 
     #[test]
@@ -70,8 +70,8 @@ mod tests {
             Filter::new("JPEG File".to_string(), "*.jpg".to_string())
         ];
 
-        let result: PathBuf = open_select_file_menu_filter(filter);
-        println!("{}", obtain_error())
+        let result: PathBuf = save_file_dialogue_filter(filter);
+        println!("{}", result.to_str().unwrap())
     }
 }
 

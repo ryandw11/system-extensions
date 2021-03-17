@@ -91,7 +91,7 @@ fn filter_to_str(filter: Vec<Filter>) -> String {
 *
 *    ## Examples
 *    ```rust
-*    use system_extensions::dialogues::filebox::{Filter, open_select_file_menu_filter};
+*    use system_extensions::dialogues::filebox::{Filter, open_file_dialogue_filter};
 *    use std::path::PathBuf;
 *
 *    let filter = vec![
@@ -99,11 +99,11 @@ fn filter_to_str(filter: Vec<Filter>) -> String {
 *        Filter::new("JPEG File".to_string(), "*.jpg".to_string())
 *    ];
 *
-*    let result: PathBuf = open_select_file_menu_filter(filter);
+*    let result: PathBuf = open_file_dialogue_filter(filter);
 *    ```
 */
 #[cfg(windows)]
-pub fn open_select_file_menu_filter(filter: Vec<Filter>) -> PathBuf {
+pub fn open_file_dialogue_filter(filter: Vec<Filter>) -> PathBuf {
     use core::mem;
     use winapi::um::commdlg::{GetOpenFileNameA, OPENFILENAMEA, OFN_PATHMUSTEXIST, OFN_FILEMUSTEXIST};
 
@@ -143,17 +143,73 @@ pub fn open_select_file_menu_filter(filter: Vec<Filter>) -> PathBuf {
 *
 *    ## Examples
 *    ```rust
-*    use system_extensions::dialogues::filebox::open_select_file_menu;
+*    use system_extensions::dialogues::filebox::open_file_dialogue;
 *    use std::path::PathBuf;
 *
-*    let result: PathBuf = open_select_file_menu();
+*    let result: PathBuf = open_file_dialogue();
 *    ```
 */
 #[cfg(windows)]
-pub fn open_select_file_menu() -> PathBuf {
+pub fn open_file_dialogue() -> PathBuf {
     let filter: Vec<Filter> = vec![Filter::new("All".to_string(), "*.*".to_string())];
 
-    open_select_file_menu_filter(filter)
+    open_file_dialogue_filter(filter)
+}
+
+
+/**
+*    Save a file selection menu with a defined filter.
+*    (API is still WIP)
+*
+*    ## Params
+*    filter: Vec<[`Filter`]> -> The vector containing the desired filters.
+*    ## Returns
+*    PathBuf -> A PathBuf with the location of the file. (Not validated)
+*
+*    ## Examples
+*    ```rust
+*    use system_extensions::dialogues::filebox::{Filter, save_file_dialogue_filter};
+*    use std::path::PathBuf;
+*
+*    let filter = vec![
+*        Filter::new("PNG File".to_string(), "*.png".to_string()),
+*        Filter::new("JPEG File".to_string(), "*.jpg".to_string())
+*    ];
+*
+*    let result: PathBuf = save_file_dialogue_filter(filter);
+*    ```
+*/
+#[cfg(windows)]
+pub fn save_file_dialogue_filter(filter: Vec<Filter>) -> PathBuf {
+    use core::mem;
+    use winapi::um::commdlg::{GetSaveFileNameA, OPENFILENAMEA, OFN_PATHMUSTEXIST, OFN_FILEMUSTEXIST};
+
+    let mut my_str: [i8; 100] = [0; 100];
+    my_str[0] = '\0' as i8;
+
+    let filt: String = filter_to_str(filter);
+
+    let mut open_file: OPENFILENAMEA = OPENFILENAMEA::default();
+    open_file.lStructSize = mem::size_of::<OPENFILENAMEA>() as u32;
+    open_file.hwndOwner = core::ptr::null_mut();
+    open_file.lpstrFile = my_str.as_ptr() as *mut i8;
+    open_file.nMaxFile = my_str.len() as u32;
+    // open_file.lpstrFilter = str_to_c_str("All\0*.*\0Text\0*.TXT\0");
+    open_file.lpstrFilter = str_to_c_str(filt.as_str());
+    open_file.nFilterIndex = 1;
+    open_file.lpstrFileTitle = core::ptr::null_mut();
+    open_file.nMaxFileTitle = 0;
+    open_file.lpstrInitialDir = core::ptr::null_mut();
+    open_file.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    let open_file_ptr: *mut OPENFILENAMEA = &mut open_file;
+
+    unsafe {
+        GetSaveFileNameA(open_file_ptr);
+    }
+    let slice = unsafe { std::slice::from_raw_parts(open_file.lpstrFile, 100) };
+
+    return PathBuf::from(slice_to_string(slice));
 }
 
 /*
@@ -172,7 +228,7 @@ pub fn open_select_file_menu() -> PathBuf {
 *
 *    ## Examples
 *    ```rust
-*    use system_extensions::dialogues::filebox::{Filter, open_select_file_menu_filter};
+*    use system_extensions::dialogues::filebox::{Filter, open_file_dialogue_filter};
 *    use std::path::PathBuf;
 *
 *    let filter = vec![
@@ -180,11 +236,11 @@ pub fn open_select_file_menu() -> PathBuf {
 *        Filter::new("JPEG File".to_string(), "*.jpg".to_string())
 *    ];
 *
-*    let result: PathBuf = open_select_file_menu_filter(filter);
+*    let result: PathBuf = open_file_dialogue_filter(filter);
 *    ```
 */
 #[cfg(unix)]
-pub fn open_select_file_menu_filter(filter: Vec<Filter>) -> PathBuf {
+pub fn open_file_dialogue_filter(filter: Vec<Filter>) -> PathBuf {
     unimplemented!()
 }
 
@@ -197,14 +253,14 @@ pub fn open_select_file_menu_filter(filter: Vec<Filter>) -> PathBuf {
 *
 *    ## Examples
 *    ```rust
-*    use system_extensions::dialogues::filebox::open_select_file_menu;
+*    use system_extensions::dialogues::filebox::open_file_dialogue;
 *    use std::path::PathBuf;
 *
-*    let result: PathBuf = open_select_file_menu();
+*    let result: PathBuf = open_file_dialogue();
 *    ```
 */
 #[cfg(unix)]
-pub fn open_select_file_menu() -> PathBuf {
+pub fn open_file_dialogue() -> PathBuf {
     unimplemented!()
 }
 
