@@ -1,0 +1,12 @@
+[package]
+name = "system-extensions-mac-test"
+version = "0.0.0"
+
+license = "MIT"
+
+[dependencies]
+system-extensions = { path = "..", features = ["dialogues"] }
+
+[[bin]]
+name = "system-extensions-mac-test"
+path = "mac_test.rs"

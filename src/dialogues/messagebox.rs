@@ -82,6 +82,7 @@ bitflags! {
         const RETRY = 4;
         const TRY_AGAIN = 10;
         const YES = 6;
+        const NONE = 0;
     }
 }
 

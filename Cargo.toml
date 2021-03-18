@@ -28,5 +28,9 @@ bitflags = "1.2.1"
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["winuser", "commdlg", "fileapi", "tlhelp32", "errhandlingapi", "processthreadsapi", "winerror", "minwindef", "minwinbase", "synchapi", "handleapi", "sysinfoapi", "timezoneapi", "winnt", "impl-default"] }
 
+[target.'cfg(target_os = "macos")'.dependencies]
+cocoa = "0.24.0"
+objc = "0.2.7"
+
 [target.'cfg(unix)'.dependencies]
 chrono = "0.4"
