@@ -9,6 +9,18 @@ extern crate bitflags;
 extern crate winapi;
 
 /**
+    The core of system_extensions.
+*/
+#[doc(hidden)]
+pub mod core;
+
+/**
+    The internal code for system_extensions.
+*/
+#[doc(hidden)]
+pub mod internal;
+
+/**
     Feature that involves system processes.
 */
 pub mod processes;
@@ -47,9 +59,9 @@ mod tests {
     use crate::metadata::time::{FileTime, set_creation_date};
     use crate::metadata::attribute::{set_attribute, Attributes, has_attribute, get_attributes};
     use crate::processes::processes::find_process_id;
-    use crate::dialogues::messagebox::{create_message_box, BoxProperties, BoxReturn};
     use crate::dialogues::filebox::{open_file_dialogue, Filter, open_file_dialogue_filter, save_file_dialogue_filter};
     use crate::obtain_error;
+    use crate::dialogues::messagebox::{MessageBox, WindowType, IconType};
 
     #[test]
     fn it_works() {
@@ -59,10 +71,12 @@ mod tests {
         let out = set_attribute(Path::new("./test.txt"), Attributes::READ_ONLY | Attributes::HIDDEN);
         println!("{:?}", out);
         println!("Has attrib: {:?}", get_attributes(Path::new("./test.txt")));
-        let r = create_message_box("Test", "This is a test of the message box!",
-                                   BoxProperties::ICON_WARNING | BoxProperties::CANCEL_TRY_CONTINUE );
 
-        if r == BoxReturn::CONTINUE {
+        let mut r = MessageBox::new("This is a test!", "Wow.png")
+            .set_icon_type(IconType::ICON_WARNING)
+            .show();
+
+        if r.unwrap() == crate::dialogues::messagebox::BoxReturn::CONTINUE {
             println!("The continue button as pressed!");
         }
         let filter = vec![

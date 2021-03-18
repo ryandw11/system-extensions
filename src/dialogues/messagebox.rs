@@ -1,13 +1,11 @@
-#[cfg(windows)]
-extern crate winapi;
-use std::ffi::CString;
+use crate::core::Bitflagable;
 
 bitflags! {
 /**
-    These are the properties for a message box.
-    The values of these can change depending on the operating system.
+    The type of window the message box should be.
+    A Window Type determines what buttons are shown.
 */
-    pub struct BoxProperties: u32 {
+    pub struct WindowType: u32 {
         const OK = 0x00000000;
         const OK_CANCEL = 0x00000001;
         const ABORT_RETRY_IGNORE = 0x00000002;
@@ -16,21 +14,57 @@ bitflags! {
         const RETRY_CANCEL = 0x00000005;
         const YES_NO = 0x00000004;
         const YES_NO_CANCEL = 0x00000003;
-        /*
+    }
+}
+
+impl Bitflagable<u32> for WindowType {
+    fn get_bits(self) -> u32 {
+        self.bits
+    }
+}
+
+bitflags! {
+/**
+    The type of Icon for the MessageBox. (Information, Warning, Error).
+    **Note:** The Question icon is determined to be deprecated on Windows and does not exist
+        on other operating systems.
+*/
+     pub struct IconType: u32 {
+    /*
            Icon Properties
          */
         const ICON_WARNING = 0x00000030;
         const ICON_INFORMATION = 0x00000040;
         const ICON_QUESTION = 0x00000020;
         const ICON_ERROR = 0x00000010;
-        /*
+    }
+}
+
+impl Bitflagable<u32> for IconType {
+    fn get_bits(self) -> u32 {
+        self.bits
+    }
+}
+
+bitflags! {
+/**
+    The Default Button for the window. This defines which button should
+    be selected when the MessageBox opens.
+*/
+    pub struct DefaultButton: u32 {
+     /*
             Default Buttons
          */
         const DEFAULT_BUTTON_ONE = 0x00000000;
         const DEFAULT_BUTTON_TWO = 0x00000100;
         const DEFAULT_BUTTON_THREE = 0x00000200;
         const DEFAULT_BUTTON_FOUR = 0x00000300;
+    }
+}
 
+impl Bitflagable<u32> for DefaultButton {
+    fn get_bits(self) -> u32 {
+        self.bits
     }
 }
 
@@ -51,88 +85,144 @@ bitflags! {
     }
 }
 
-/**
-    Creates a message box. (A popup window that displays information, a warning, or an error.)
-
-   ## Params
-   title: &str -> The title of the message box. <br>
-   content: &str -> The content of the message box. <br>
-   box_type: [`BoxProperties`] -> The properties of the message box. Message box properties define
-        the type of message box (info, warn, etc), the buttons, and the default selected button.
-
-   ## Returns
-   [`BoxReturn`] -> The action that the user took. (The clicked button).
-
-   ## Examples
-   Standard info box with an ok button:
-   ```rust
-   use system_extensions::dialogues::messagebox::{BoxReturn, BoxProperties, create_message_box};
-   let result = create_message_box("Test Message", "This is a test message!", BoxProperties::ICON_INFORMATION);
-   if result == BoxReturn::OK {
-       println!("The user selected ok!");
-   }
-   ```
-   Warning with an OK or Cancel button:
-   ```rust
-   use system_extensions::dialogues::messagebox::{BoxReturn, BoxProperties, create_message_box};
-   let result = create_message_box("Test Message", "This is a test message!", BoxProperties::ICON_WARNING | BoxProperties::OK_CANCEL);
-   if result == BoxReturn::CANCEL {
-       println!("The user canceled the message!");
-   }
-   ```
-   Error with Abort, Retry, and Ignore buttons. The Retry button is selected by default.
-   ```rust
-   use system_extensions::dialogues::messagebox::{BoxReturn, BoxProperties, create_message_box};
-   let result = create_message_box("Test Message", "This is a test message!", BoxProperties::ICON_ERROR | BoxProperties::ABORT_RETRY_IGNORE | BoxProperties::DEFAULT_BUTTON_TWO);
-   if result == BoxReturn::RETRY {
-       println!("The user retried the message!");
-   }
-   ```
-*/
-#[cfg(windows)]
-pub fn create_message_box(title: &str, content: &str, box_type: BoxProperties) -> BoxReturn {
-    use winapi::um::winuser::MessageBoxA;
-    use core::ptr::null_mut;
-
-    let title_cstr: CString = CString::new(title).unwrap();
-    let content_ctr: CString = CString::new(content).unwrap();
-
-    unsafe{
-        return BoxReturn::from_bits(
-            MessageBoxA(null_mut(), content_ctr.as_ptr(), title_cstr.as_ptr(),
-                        box_type.bits)
-        ).unwrap();
+impl Bitflagable<i32> for BoxReturn {
+    fn get_bits(self) -> i32 {
+        self.bits
     }
 }
 
 /**
-   This is a version of [`create_message_box`] without any of the pre-defined Structs.
-   View the [Windows API documentation](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebox) for valid parameters.
+    A builder struct to create a MessageBox.
 
-   ## Params
-   title: &str -> The title of the message box.<br>
-   content: &str -> The content of the message box.<br>
-   box_type: u32 -> The properties of the message box.<br>
-
-   ## Returns
-   i32 -> The user result.
-
-   ## Example
+   # Examples
+   Standard Window:
    ```rust
-   use system_extensions::dialogues::messagebox::ncreate_message_box;
-   ncreate_message_box("Title", "The message of the box.", 0x00000041);
+   use system_extensions::dialogues::messagebox::{MessageBox, BoxReturn};
+   let result = MessageBox::new("My Title", "The content of the message box!").show();
+
+   if result.unwrap() == BoxReturn::OK {
+       println!("The user acknowledge the message!");
+   }
+   ```
+   Window with Icon:
+   ```rust
+   use system_extensions::dialogues::messagebox::{MessageBox, BoxReturn, IconType};
+   let result = MessageBox::new("My Title", "The content of the message box!")
+       .set_icon_type(IconType::ICON_ERROR)
+       .show();
+
+   if result.unwrap() == BoxReturn::OK {
+       println!("The user acknowledge the error!");
+   }
    ```
 */
-#[cfg(windows)]
-pub fn ncreate_message_box(title: &str, content: &str, box_type: u32) -> i32 {
-    use winapi::um::winuser::MessageBoxA;
-    use core::ptr::null_mut;
+#[derive(Clone, Copy, Debug)]
+pub struct MessageBox {
+    pub(crate) title: &'static str,
+    pub(crate) content: &'static str,
+    pub(crate) window_type: WindowType,
+    pub(crate) icon_type: IconType,
+    pub(crate) default_button: DefaultButton,
+}
 
-    let title_cstr: CString = CString::new(title).unwrap();
-    let content_ctr: CString = CString::new(content).unwrap();
+impl MessageBox {
+    /**
+        Construct a new MessageBox.
 
-    unsafe{
-        return MessageBoxA(null_mut(), content_ctr.as_ptr(),
-                           title_cstr.as_ptr(), box_type);
+      # Params
+      title: &str -> The title of the window.<br>
+      content: &str -> The content of the window.<br>
+
+      # Returns
+      The instance of a default MessageBox.
+    */
+    pub fn new(title: &'static str, content: &'static str) -> MessageBox {
+        MessageBox {
+            title,
+            content,
+            window_type: WindowType::OK_CANCEL,
+            icon_type: IconType::ICON_INFORMATION,
+            default_button: DefaultButton::DEFAULT_BUTTON_ONE,
+        }
+    }
+
+    /**
+        Set the title of the MessageBox.
+
+        # Params
+        title: &str -> The title to set.<br>
+
+        # Returns
+        A mutable instance of the MessageBox.
+    */
+    pub fn set_title(&mut self, title: &'static str) -> &mut Self {
+        self.title = title;
+        self
+    }
+
+    /**
+    Set the content of the MessageBox.
+
+    # Params
+    content: &str -> The content to set.<br>
+
+    # Returns
+    A mutable instance of the MessageBox.
+    */
+    pub fn set_content(&mut self, content: &'static str) -> &mut Self {
+        self.content = content;
+        self
+    }
+
+    /**
+    Set the type of the MessageBox. (The Buttons that are shown).
+
+    # Params
+    window_type: [`WindowType`] -> The WindowType to set.<br>
+
+    # Returns
+    A mutable instance of the MessageBox.
+*/
+    pub fn set_window_type(&mut self, window_type: WindowType) -> &mut Self {
+        self.window_type = window_type;
+        self
+    }
+
+    /**
+    Set the icon type of the MessageBox.
+
+    # Params
+    icon_type: [`IconType`] -> The IconType to set.<br>
+
+    # Returns
+    A mutable instance of the MessageBox.
+*/
+    pub fn set_icon_type(&mut self, icon_type: IconType) -> &mut Self {
+        self.icon_type = icon_type;
+        self
+    }
+
+    /**
+    Set the default button for the MessageBox.
+
+    # Params
+    default_button: [`DefaultButton`] -> The default button of the MessageBox.<br>
+
+    # Returns
+    A mutable instance of the MessageBox.
+*/
+    pub fn set_default_button(&mut self, default_button: DefaultButton) -> &mut Self {
+        self.default_button = default_button;
+        self
+    }
+
+    /**
+    Display the MessageBox.
+
+    # Returns
+    Result<[`BoxReturn`], String> -> The result of the MessageBox.
+*/
+    pub fn show(&self) -> Result<BoxReturn, String> {
+        crate::internal::dialogues::create_message_box(*self)
     }
 }
