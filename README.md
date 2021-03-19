@@ -67,11 +67,14 @@ Dialogues are GUI menus that function as user interaction.
 ### MessageBox
 Message boxes are GUI popup menus that displays information, warnings, or errors.
 ```rust
-use system_extensions::dialogues::messagebox::{BoxReturn, BoxProperties, create_message_box};
+use system_extensions::dialogues::messagebox::{MessageBox, BoxReturn, IconType};
 fn main(){
-    let result = create_message_box("Program Warning!", "Some kind of error occurred that needs a warning!", BoxProperties::ICON_WARNING | BoxProperties::OK_CANCEL);
-    if result == BoxReturn::CANCEL {
-        println!("The user canceled the message!");
+    let result = MessageBox::new("My Title", "The content of the message box!")
+        .set_icon_type(IconType::ICON_ERROR)
+        .show();
+
+    if result.unwrap() == BoxReturn::OK {
+        println!("The user acknowledge the error!");
     }
 }
 ```
@@ -79,15 +82,17 @@ fn main(){
 ### FileBox
 A FileBox is a box that allows the user to save or open files.
 ```rust
-use system_extensions::dialogues::filebox::{Filter, open_select_file_menu_filter};
-use std::path::PathBuf;
+use system_extensions::dialogues::filebox::FileBox;
+use std::path::Path;
 
 fn main(){
-    let filter = vec![
-        Filter::new("PNG File".to_string(), "*.png".to_string()),
-        Filter::new("JPEG File".to_string(), "*.jpg".to_string())
-    ];
+    let result = FileBox::new()
+        .filter("PNG", "*.png")
+        .filter("JPG", "*.jpg")
+        .filter("GIF", "*.gif")
+        .directory(Path::new("D:\\"))
+        .save("image.png");
 
-    let result: PathBuf = open_select_file_menu_filter(filter);
+    println!("{}", result.expect("The file was not saved!").to_str().unwrap());
 }
 ```

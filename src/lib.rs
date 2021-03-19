@@ -66,9 +66,10 @@ mod tests {
     use crate::metadata::time::{FileTime, set_creation_date};
     use crate::metadata::attribute::{set_attribute, Attributes, has_attribute, get_attributes};
     use crate::processes::processes::find_process_id;
-    use crate::dialogues::filebox::{open_file_dialogue, Filter, open_file_dialogue_filter, save_file_dialogue_filter};
+    use crate::dialogues::filebox::{Filter};
     use crate::obtain_error;
     use crate::dialogues::messagebox::{MessageBox, WindowType, IconType};
+    use crate::dialogues::filebox::FileBox;
 
     #[test]
     fn it_works() {
@@ -86,13 +87,13 @@ mod tests {
         if r.unwrap() == crate::dialogues::messagebox::BoxReturn::CONTINUE {
             println!("The continue button as pressed!");
         }
-        let filter = vec![
-            Filter::new("PNG File".to_string(), "*.png".to_string()),
-            Filter::new("JPEG File".to_string(), "*.jpg".to_string())
-        ];
 
-        let result: PathBuf = save_file_dialogue_filter(filter);
-        println!("{}", result.to_str().unwrap())
+        let result = FileBox::new().filter("Text", "*.txt")
+            .directory(Path::new("D:\\"))
+            .save("my_stuff.txt");
+
+        println!("{}", result.expect("There should be a file!").to_str().unwrap());
+        // println!("This is a tst");
     }
 }
 

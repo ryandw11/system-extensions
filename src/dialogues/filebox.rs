@@ -1,14 +1,9 @@
-#[cfg(windows)]
-extern crate winapi;
-
-use std::ffi::CString;
-use std::os::raw::c_char;
 use std::path::{Path, PathBuf};
 
 /**
-    Represents a valid file filter.
+    This stores information for the filters.
 */
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Filter {
     pub title: String,
     pub file_ending: String,
@@ -36,231 +31,153 @@ impl Filter {
     }
 }
 
-
 /**
-    Change a str to a c string.
+   Represents a Save or Open File Dialog.<br><br>
+   This is a builder struct, all functions return self, except the open or save method.
+
+   # Examples
+   Generic open file:
+   ```rust
+   use system_extensions::dialogues::filebox::FileBox;
+   use std::path::Path;
+
+   let result = FileBox::new().open();
+
+   println!("{}", result.expect("The file was not opened!").to_str().unwrap());
+   ```
+   Generic save file:
+   ```rust
+   use system_extensions::dialogues::filebox::FileBox;
+   use std::path::Path;
+
+   let result = FileBox::new().save("example.txt");
+
+   println!("{}", result.expect("The file was not saved!").to_str().unwrap());
+   ```
+   Filters:
+   ```rust
+   use system_extensions::dialogues::filebox::FileBox;
+   use std::path::Path;
+
+   let result = FileBox::new()
+            .filter("PNG", "*.png")
+            .filter("JPG", "*.jpg")
+            .filter("GIF", "*.gif")
+            .open();
+
+   println!("{}", result.expect("The file was not opened!").to_str().unwrap());
+   ```
+   Save a file with a default directory:
+   ```rust
+   use system_extensions::dialogues::filebox::FileBox;
+   use std::path::Path;
+
+   let result = FileBox::new()
+            .filter("Text", "*.txt")
+            .directory(Path::new("D:\\"))
+            .save("example.txt");
+
+   println!("{}", result.expect("The file was not saved!").to_str().unwrap());
+   ```
 */
-fn str_to_c_str(s: &str) -> *mut c_char {
-    let mut bytes: Vec<u8> = String::from(s).into_bytes();
-    bytes.push(b"\0"[0]);
-    let mut cchar_vec: Vec<c_char> = bytes.iter().map(|b| *b as c_char).collect();
-    cchar_vec.as_mut_ptr()
+#[derive(Clone, Debug)]
+pub struct FileBox {
+    pub(crate) filters: Vec<Filter>,
+    pub(crate) directory: Option<&'static Path>,
 }
 
-/**
-    Convert an array slice of i8 to a String.
+// TODO:: This is probably implemented pretty poorly.
+// TODO::       fix this.
+impl FileBox {
+    /**
+        Create a new FileBox to open or save files.
 
-    The array slice of i8 is expected to represent a UTF-8 String.
-    The array slice is also permitted to have NULL (\0) characters.
-*/
-fn slice_to_string(arr: &[i8]) -> String {
-    let mut output: Vec<u8> = Vec::new();
-    for i in arr.iter() {
-        let ui = *i as u8;
-        if ui == b"\0"[0] {
-            break;
+        ## Default Values
+        By default the Filter is set to a Vector with the all filter inside. ('All', '*.*')
+        By default there is not default directory.
+    */
+    pub fn new() -> FileBox {
+        FileBox {
+            filters: vec![Filter::new("All".to_string(), "*.*".to_string())],
+            directory: None,
         }
-        output.push(ui);
-    }
-    String::from_utf8(output).unwrap()
-}
-
-/**
-    Converts a filter to the proper format for the Windows API.
-*/
-#[cfg(windows)]
-fn filter_to_str(filter: Vec<Filter>) -> String {
-    let mut string: String = String::new();
-    for fil in filter {
-        string.push_str(&fil.title);
-        string.push_str("\0");
-        string.push_str(&fil.file_ending);
-        string.push_str("\0");
     }
 
-    return string;
-}
-
-/**
-*    Open a file selection menu with a defined filter.
-*
-*    ## Params
-*    filter: Vec<[`Filter`]> -> The vector containing the desired filters.
-*    ## Returns
-*    PathBuf -> A PathBuf with the location of the file. (Not validated)
-*
-*    ## Examples
-*    ```rust
-*    use system_extensions::dialogues::filebox::{Filter, open_file_dialogue_filter};
-*    use std::path::PathBuf;
-*
-*    let filter = vec![
-*        Filter::new("PNG File".to_string(), "*.png".to_string()),
-*        Filter::new("JPEG File".to_string(), "*.jpg".to_string())
-*    ];
-*
-*    let result: PathBuf = open_file_dialogue_filter(filter);
-*    ```
-*/
-#[cfg(windows)]
-pub fn open_file_dialogue_filter(filter: Vec<Filter>) -> PathBuf {
-    use core::mem;
-    use winapi::um::commdlg::{GetOpenFileNameA, OPENFILENAMEA, OFN_PATHMUSTEXIST, OFN_FILEMUSTEXIST};
-
-    let mut my_str: [i8; 100] = [0; 100];
-    my_str[0] = '\0' as i8;
-
-    let filt: String = filter_to_str(filter);
-
-    let mut open_file: OPENFILENAMEA = OPENFILENAMEA::default();
-    open_file.lStructSize = mem::size_of::<OPENFILENAMEA>() as u32;
-    open_file.hwndOwner = core::ptr::null_mut();
-    open_file.lpstrFile = my_str.as_ptr() as *mut i8;
-    open_file.nMaxFile = my_str.len() as u32;
-    // open_file.lpstrFilter = str_to_c_str("All\0*.*\0Text\0*.TXT\0");
-    open_file.lpstrFilter = str_to_c_str(filt.as_str());
-    open_file.nFilterIndex = 1;
-    open_file.lpstrFileTitle = core::ptr::null_mut();
-    open_file.nMaxFileTitle = 0;
-    open_file.lpstrInitialDir = core::ptr::null_mut();
-    open_file.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-    let open_file_ptr: *mut OPENFILENAMEA = &mut open_file;
-
-    unsafe {
-        GetOpenFileNameA(open_file_ptr);
+    /**
+        Clear the current filters. This is useful if you don't want the 'All' filter.
+    */
+    pub fn clear_filters(mut self) -> Self {
+        self.filters.clear();
+        self
     }
-    let slice = unsafe { std::slice::from_raw_parts(open_file.lpstrFile, 100) };
 
-    return PathBuf::from(slice_to_string(slice));
-}
+    /**
+        Set the vector of filters.
 
-/**
-*    Open a file selection menu with a default filter.
-*
-*    ## Returns
-*    PathBuf -> A PathBuf with the location of the file. (Not validated)
-*
-*    ## Examples
-*    ```rust
-*    use system_extensions::dialogues::filebox::open_file_dialogue;
-*    use std::path::PathBuf;
-*
-*    let result: PathBuf = open_file_dialogue();
-*    ```
-*/
-#[cfg(windows)]
-pub fn open_file_dialogue() -> PathBuf {
-    let filter: Vec<Filter> = vec![Filter::new("All".to_string(), "*.*".to_string())];
-
-    open_file_dialogue_filter(filter)
-}
-
-
-/**
-*    Save a file selection menu with a defined filter.
-*    (API is still WIP)
-*
-*    ## Params
-*    filter: Vec<[`Filter`]> -> The vector containing the desired filters.
-*    ## Returns
-*    PathBuf -> A PathBuf with the location of the file. (Not validated)
-*
-*    ## Examples
-*    ```rust
-*    use system_extensions::dialogues::filebox::{Filter, save_file_dialogue_filter};
-*    use std::path::PathBuf;
-*
-*    let filter = vec![
-*        Filter::new("PNG File".to_string(), "*.png".to_string()),
-*        Filter::new("JPEG File".to_string(), "*.jpg".to_string())
-*    ];
-*
-*    let result: PathBuf = save_file_dialogue_filter(filter);
-*    ```
-*/
-#[cfg(windows)]
-pub fn save_file_dialogue_filter(filter: Vec<Filter>) -> PathBuf {
-    use core::mem;
-    use winapi::um::commdlg::{GetSaveFileNameA, OPENFILENAMEA, OFN_PATHMUSTEXIST, OFN_FILEMUSTEXIST};
-
-    let mut my_str: [i8; 100] = [0; 100];
-    my_str[0] = '\0' as i8;
-
-    let filt: String = filter_to_str(filter);
-
-    let mut open_file: OPENFILENAMEA = OPENFILENAMEA::default();
-    open_file.lStructSize = mem::size_of::<OPENFILENAMEA>() as u32;
-    open_file.hwndOwner = core::ptr::null_mut();
-    open_file.lpstrFile = my_str.as_ptr() as *mut i8;
-    open_file.nMaxFile = my_str.len() as u32;
-    // open_file.lpstrFilter = str_to_c_str("All\0*.*\0Text\0*.TXT\0");
-    open_file.lpstrFilter = str_to_c_str(filt.as_str());
-    open_file.nFilterIndex = 1;
-    open_file.lpstrFileTitle = core::ptr::null_mut();
-    open_file.nMaxFileTitle = 0;
-    open_file.lpstrInitialDir = core::ptr::null_mut();
-    open_file.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-    let open_file_ptr: *mut OPENFILENAMEA = &mut open_file;
-
-    unsafe {
-        GetSaveFileNameA(open_file_ptr);
+        # Params
+        filters: Vec<[`Filter`]> -> The vector of filters to be used. (Replaces any existing filters).
+    */
+    pub fn set_filters(mut self, filters: Vec<Filter>) -> Self {
+        self.filters = filters;
+        self
     }
-    let slice = unsafe { std::slice::from_raw_parts(open_file.lpstrFile, 100) };
 
-    return PathBuf::from(slice_to_string(slice));
+    /**
+        Add a filter to the file box. You may want to clear the filters first if
+        you don't want the Any filter.
+
+        # Params
+        name: &str -> The name of the filter.<br>
+        ending: &str -> The ending of the filter.<br>
+
+        # Example
+        ```rust
+        use system_extensions::dialogues::filebox::FileBox;
+        FileBox::new().filter("Text", "*.*").open();
+        ```
+    */
+    pub fn filter(mut self, name: &str, ending: &str) -> Self {
+        self.filters.push(Filter::new(name.to_string(), ending.to_string()));
+        self
+    }
+
+    /**
+        Set the default directory for the save or open dialog to display.
+        <br>
+        Not setting this causes the dialog to open the last displayed directory or
+        the documents folder.
+        # Params
+        path: &`static Path -> The path of the directory to display.
+    */
+    pub fn directory(mut self, path: &'static Path) -> Self {
+        self.directory = Some(path);
+        self
+    }
+
+    /**
+        Display the open file dialog.
+
+        # Returns
+        `Option<PathBuf>` -> The Path to the opened file. An empty Option means that the window was closed
+        without opening anything.
+    */
+    pub fn open(self) -> Option<PathBuf> {
+        use crate::internal::filebox::open_file_dialogue;
+        open_file_dialogue(self)
+    }
+
+    /**
+        Display the save file dialog.
+
+        # Params
+        suggested_name: &str -> The default name that is given when the dialog is displayed.
+
+        # Returns
+        `Option<PathBuf>` -> The path to the saved file. An empty Option means that the window was
+        closed without saving anything.
+    */
+    pub fn save(self, suggested_name: &str) -> Option<PathBuf> {
+        use crate::internal::filebox::save_file_dialogue_filter;
+        save_file_dialogue_filter(self, suggested_name)
+    }
 }
-
-/*
-    Unix Section
- */
-
-
-/**
-*    Open a file selection menu with a defined filter.
-*    **(Currently not implemented for Unix Systems)**
-*
-*    ## Params
-*    filter: Vec<[`Filter`]> -> The vector containing the desired filters.
-*    ## Returns
-*    PathBuf -> A PathBuf with the location of the file. (Not validated)
-*
-*    ## Examples
-*    ```rust
-*    use system_extensions::dialogues::filebox::{Filter, open_file_dialogue_filter};
-*    use std::path::PathBuf;
-*
-*    let filter = vec![
-*        Filter::new("PNG File".to_string(), "*.png".to_string()),
-*        Filter::new("JPEG File".to_string(), "*.jpg".to_string())
-*    ];
-*
-*    let result: PathBuf = open_file_dialogue_filter(filter);
-*    ```
-*/
-#[cfg(unix)]
-pub fn open_file_dialogue_filter(filter: Vec<Filter>) -> PathBuf {
-    unimplemented!()
-}
-
-/**
-*    Open a file selection menu with a default filter.
-*   **(Currently not implemented for Unix Systems)**
-*
-*    ## Returns
-*    PathBuf -> A PathBuf with the location of the file. (Not validated)
-*
-*    ## Examples
-*    ```rust
-*    use system_extensions::dialogues::filebox::open_file_dialogue;
-*    use std::path::PathBuf;
-*
-*    let result: PathBuf = open_file_dialogue();
-*    ```
-*/
-#[cfg(unix)]
-pub fn open_file_dialogue() -> PathBuf {
-    unimplemented!()
-}
-
