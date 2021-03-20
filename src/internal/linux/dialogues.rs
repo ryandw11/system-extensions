@@ -32,11 +32,24 @@ pub fn create_message_box(message_box: MessageBox) -> Result<BoxReturn, String> 
         dialog.add_button("Abort", ResponseType::Cancel);
         dialog.add_button("Try", ResponseType::Other(3));
         dialog.add_button("Continue", ResponseType::Other(4));
+    }else if message_box.window_type== WindowType::RETRY_CANCEL{
+        dialog.add_button("Abort", ResponseType::Cancel);
+        dialog.add_button("Retry", ResponseType::Other(1));
+    }else if message_box.window_type== WindowType::YES_NO{
+        dialog.add_button("Yes", ResponseType::Yes);
+        dialog.add_button("No", ResponseType::No);
+    }else if message_box.window_type== WindowType::YES_NO_CANCEL{
+        dialog.add_button("Yes", ResponseType::Yes);
+        dialog.add_button("No", ResponseType::No);
+        dialog.add_button("Cancel", ResponseType::Cancel);
+
     }
     let response_type = dialog.run();
     let mut box_return = match response_type {
         ResponseType::Ok => Some(BoxReturn::OK),
         ResponseType::Cancel => Some(BoxReturn::CANCEL),
+        ResponseType::Yes => Some(BoxReturn::YES),
+        ResponseType::No => Some(BoxReturn::NO),
         _ => {None}
     };
     return if box_return.is_none() {
