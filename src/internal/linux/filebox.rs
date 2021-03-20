@@ -5,7 +5,10 @@ use gtk::{FileChooserDialog, FileChooserAction, DialogExt, ResponseType, Window,
 pub fn open_file_dialogue(file_box: FileBox) -> Option<PathBuf> {
 
 gtk::init();
-
+    let result = gtk::init();
+    if result.is_err(){
+        return Option::None;
+    }
     let dialog = FileChooserDialog::with_buttons::<Window>(
         Some("Open File"),
         None,
@@ -25,9 +28,10 @@ gtk::init();
 }
 
 pub fn save_file_dialogue_filter(file_box: FileBox, suggested_name: &str) -> Option<PathBuf> {
-
-    gtk::init();
-
+    let result = gtk::init();
+    if result.is_err(){
+        return Option::None;
+    }
     let dialog = FileChooserDialog::with_buttons::<Window>(
         Some("Save File"),
         None,

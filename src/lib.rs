@@ -152,7 +152,7 @@ mod tests {
         }
     #[test]
     fn message_box() {
-        let mut r = MessageBox::new("This is a test!", "Wow.png")
+        let mut r = MessageBox::new("This is a test!", "Wow I figured out GTK!")
             .set_icon_type(IconType::ICON_WARNING)
             .show();
     }
