@@ -115,7 +115,7 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let val = find_process_id("chrome").expect("An error occurred!");
+        let val = find_process_id(get_test_process()).expect("An error occurred!");
         println!("{:?}", val);
         // Test a valid PID.
         let pid : u32 = 1818;
@@ -136,6 +136,15 @@ mod tests {
         set_changed_date( Path::new("./test.txt"), &time);
         set_accessed_date( Path::new("./test.txt"), &time);
     }
+    fn get_test_process() -> &'static str {
+        if  cfg!(target_os = "macos") {
+            "launchd"
+        } else if  cfg!(target_os = "linux") {
+            "NetworkManager"
+        } else { "" }
+    }
+
+
 
     // #[test]
     // fn attribute_tests(){
