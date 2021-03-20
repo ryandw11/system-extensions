@@ -112,6 +112,8 @@ mod tests {
     use crate::metadata::attribute::{set_attribute, Attributes, get_attributes};
     use crate::processes::processes::{find_process_id, is_process_running};
     use std::io::Write;
+    use crate::dialogues::filebox::FileBox;
+    use crate::dialogues::messagebox::{MessageBox, IconType, WindowType};
 
     #[test]
     fn it_works() {
@@ -135,6 +137,45 @@ mod tests {
         set_creation_date(Path::new("./test.txt"), &time);
         set_changed_date( Path::new("./test.txt"), &time);
         set_accessed_date( Path::new("./test.txt"), &time);
+    }
+    #[test]
+    fn dialog_open_box() {
+        let option = FileBox::new().filter("Text", "*.txt")
+            .directory(Path::new("/home/")).open();
+        println!("{}", option.unwrap().to_str().unwrap());
+    }
+        #[test]
+        fn dialog_save_box() {
+            let option = FileBox::new().filter("Text", "*.txt")
+                .directory(Path::new("/home/")).save("test.txt");
+            println!("{}", option.unwrap().to_str().unwrap());
+        }
+    #[test]
+    fn message_box() {
+        let mut r = MessageBox::new("This is a test!", "Wow I figured out GTK!")
+            .set_icon_type(IconType::ICON_WARNING).set_window_type(WindowType::OK_CANCEL)
+            .show();
+        let mut r = MessageBox::new("This is a test!", "Wow I figured out GTK!")
+            .set_icon_type(IconType::ICON_WARNING).set_window_type(WindowType::OK)
+            .show();
+        let mut r = MessageBox::new("This is a test!", "Wow I figured out GTK!")
+            .set_icon_type(IconType::ICON_WARNING).set_window_type(WindowType::RETRY_CANCEL)
+            .show();
+        let mut r = MessageBox::new("This is a test!", "Wow I figured out GTK!")
+            .set_icon_type(IconType::ICON_WARNING).set_window_type(WindowType::HELP)
+            .show();
+        let mut r = MessageBox::new("This is a test!", "Wow I figured out GTK!")
+            .set_icon_type(IconType::ICON_WARNING).set_window_type(WindowType::YES_NO_CANCEL)
+            .show();
+        let mut r = MessageBox::new("This is a test!", "Wow I figured out GTK!")
+            .set_icon_type(IconType::ICON_WARNING).set_window_type(WindowType::YES_NO)
+            .show();
+        let mut r = MessageBox::new("This is a test!", "Wow I figured out GTK!")
+            .set_icon_type(IconType::ICON_WARNING).set_window_type(WindowType::CANCEL_TRY_CONTINUE)
+            .show();
+        let mut r = MessageBox::new("This is a test!", "Wow I figured out GTK!")
+            .set_icon_type(IconType::ICON_WARNING).set_window_type(WindowType::ABORT_RETRY_IGNORE)
+            .show();
     }
     fn get_test_process() -> &'static str {
         if  cfg!(target_os = "macos") {
