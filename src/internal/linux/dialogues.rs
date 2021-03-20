@@ -7,24 +7,51 @@ pub fn create_message_box(message_box: MessageBox) -> Result<BoxReturn, String> 
     if result.is_err(){
         return Err("GTK unable to initialize".parse().unwrap());
     }
-    let mut b_type=match message_box.window_type{
-        WindowType::OK => ButtonsType::Ok,
-        WindowType::OK_CANCEL => ButtonsType::OkCancel,
-    _=>ButtonsType::Ok
-    };
+
 
     let dialog = MessageDialog::new(None::<&Window>,
                                     DialogFlags::empty(),
                                     MessageType::Info,
-                                    b_type,
+                                    ButtonsType::None,
                                     message_box.content);
     //TODO track down icon types.
     dialog.set_title(message_box.title);
+
+    if message_box.window_type == WindowType::OK{
+     dialog.add_button("Ok", ResponseType::Ok);
+    }else if message_box.window_type== WindowType::OK_CANCEL{
+        dialog.add_button("Ok", ResponseType::Ok);
+        dialog.add_button("Cancel", ResponseType::Cancel);
+    }else if message_box.window_type== WindowType::HELP{
+        dialog.add_button("Help", ResponseType::Help);
+    }else if message_box.window_type== WindowType::ABORT_RETRY_IGNORE{
+        dialog.add_button("Abort", ResponseType::Cancel);
+        dialog.add_button("Retry", ResponseType::Other(1));
+        dialog.add_button("Ignore", ResponseType::Other(2));
+    }else if message_box.window_type== WindowType::CANCEL_TRY_CONTINUE{
+        dialog.add_button("Abort", ResponseType::Cancel);
+        dialog.add_button("Try", ResponseType::Other(3));
+        dialog.add_button("Continue", ResponseType::Other(4));
+    }
     let response_type = dialog.run();
-    let box_return = match response_type {
-        ResponseType::Ok => BoxReturn::OK,
-        ResponseType::Cancel => BoxReturn::CANCEL,
-        _ => BoxReturn::OK
+    let mut box_return = match response_type {
+        ResponseType::Ok => Some(BoxReturn::OK),
+        ResponseType::Cancel => Some(BoxReturn::CANCEL),
+        _ => {None}
     };
-    Ok(box_return)
+    return if box_return.is_none() {
+        let mut box_return = match response_type.into() {
+            1 => Some(BoxReturn::RETRY),
+            2 => Some(BoxReturn::IGNORE),
+            3 => Some(BoxReturn::TRY_AGAIN),
+            4 => Some(BoxReturn::CONTINUE),
+            _ => { None }
+        };
+        if box_return.is_none(){
+            return Err("Invalid Response".parse().unwrap());
+        }
+        Ok(box_return.unwrap())
+    } else {
+        Ok(box_return.unwrap())
+    }
 }
