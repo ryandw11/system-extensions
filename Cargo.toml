@@ -15,6 +15,7 @@ exclude = ["test.txt"]
 processes = []
 metadata = []
 dialogues = []
+notifications = []
 
 [package.metadata.docs.rs]
 all-features = true
@@ -27,6 +28,10 @@ bitflags = "1.2.1"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["winuser", "commdlg", "fileapi", "tlhelp32", "errhandlingapi", "processthreadsapi", "winerror", "minwindef", "minwinbase", "synchapi", "handleapi", "sysinfoapi", "timezoneapi", "winnt", "impl-default"] }
+windows = "0.8.0"
+
+[target.'cfg(windows)'.build-dependencies]
+windows = "0.8.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 cocoa = "0.24.0"
