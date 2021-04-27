@@ -5,7 +5,7 @@ authors = ["Ryandw11 <ryandw11@ryandw11.com>"]
 edition = "2018"
 license = "MIT"
 description = "A robust set of extensions for operating system operations."
-keywords = ["processes", "metadata", "file", "time", "os", "dialogues", "open file"]
+keywords = ["processes", "metadata", "file", "time", "os", "dialogues", "openfile"]
 repository = "https://github.com/ryandw11/system-extensions"
 readme = "README.md"
 
