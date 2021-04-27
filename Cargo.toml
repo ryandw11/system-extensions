@@ -1,6 +1,6 @@
 [package]
 name = "system-extensions"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["Ryandw11 <ryandw11@ryandw11.com>"]
 edition = "2018"
 license = "MIT"

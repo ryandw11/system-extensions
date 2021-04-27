@@ -4,10 +4,10 @@ System Extensions is split up into several modules that contain different functi
    
 Add this to your `Cargo.toml` file to use it.
 ```toml
-system-extensions = {version = "0.0.3", features = ["metadata", "processes", "dialogues"]}
+system-extensions = {version = "0.0.4", features = ["metadata", "processes", "dialogues"]}
 ```
 
-[View the documentation here!](https://docs.rs/system-extensions/0.0.3/x86_64-pc-windows-msvc/system_extensions/all.html)
+[View the documentation here!](https://docs.rs/system-extensions/0.0.4/x86_64-pc-windows-msvc/system_extensions/all.html)
 
 **Features**
 - Processes
