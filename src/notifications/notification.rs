@@ -1,6 +1,8 @@
 /**
    Create a simple notification.
 
+   (Experimental: Windows Only)
+
    A simple notification is a notification that is basic and exists for easy use and is
    guaranteed to mainly work cross-platform.
 */

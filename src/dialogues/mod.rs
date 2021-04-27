@@ -6,6 +6,7 @@ pub mod messagebox;
 
 /**
     A FileBox allows you to Open or Save files.
+    (Mac currently not supported)
 */
 #[cfg(any(feature="dialogues", test))]
 pub mod filebox;

@@ -4,20 +4,23 @@ System Extensions is split up into several modules that contain different functi
    
 Add this to your `Cargo.toml` file to use it.
 ```toml
-system-extensions = {version = "0.0.2", features = ["metadata", "processes"]}
+system-extensions = {version = "0.0.3", features = ["metadata", "processes", "dialogues"]}
 ```
 
-[View the documentation here!](https://docs.rs/system-extensions/0.0.2/x86_64-pc-windows-msvc/system_extensions/all.html)
+[View the documentation here!](https://docs.rs/system-extensions/0.0.3/x86_64-pc-windows-msvc/system_extensions/all.html)
 
 **Features**
 - Processes
 - Metadata
+- Dialogues**
 
 **Experimental Features**
-- Dialogues
+- Notifications (Windows Only)
 
 Experimental features are modules that might not support all platforms yet.
-API in experimental features might change in the future.
+API in experimental features might change in the future.  
+  
+** Macos Not Supported
 
 # Features
 ## Processes
@@ -62,15 +65,16 @@ fn main(){
 }
 ```
 ## Dialogues
-**Note: This is an Experimental Feature. Currently, this is Windows only.**  
 Dialogues are GUI menus that function as user interaction.  
 ### MessageBox
+![Immage of a messagebox.](https://www.ryandw11.com/libraryContent/system-extensions/win_err.PNG)  
 Message boxes are GUI popup menus that displays information, warnings, or errors.
 ```rust
-use system_extensions::dialogues::messagebox::{MessageBox, BoxReturn, IconType};
+use system_extensions::dialogues::messagebox::{MessageBox, BoxReturn, IconType, WindowType};
 fn main(){
-    let result = MessageBox::new("My Title", "The content of the message box!")
+    let result = MessageBox::new("Error Message Dialogue", "This error is provided by System Extensions!")
         .set_icon_type(IconType::ICON_ERROR)
+        .set_window_type(WindowType::OK_CANCEL)
         .show();
 
     if result.unwrap() == BoxReturn::OK {
@@ -80,7 +84,8 @@ fn main(){
 ```
 
 ### FileBox
-A FileBox is a box that allows the user to save or open files.
+A FileBox is a box that allows the user to save or open files.  
+(Mac is currently not supported.)
 ```rust
 use system_extensions::dialogues::filebox::FileBox;
 use std::path::Path;
@@ -94,5 +99,18 @@ fn main(){
         .save("image.png");
 
     println!("{}", result.expect("The file was not saved!").to_str().unwrap());
+}
+```
+
+### Notifications
+** This features is experimental and only available for Windows. **
+```rust
+use system_extensions::notifications::notification::SimpleNotification;
+fn main() {
+    let notif = SimpleNotification::new("Rust Notification".to_string())
+        .set_app_id("{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\\WindowsPowerShell\\v1.0\\powershell.exe".to_string())
+        .add_text("This notification was sent via rust!".to_string())
+        .add_text("This uses the Windows Notification Center.".to_string())
+        .display();
 }
 ```
